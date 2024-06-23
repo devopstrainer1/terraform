@@ -1,0 +1,18 @@
+rm -rf docker-jenkins-build
+mkdir docker-jenkins-build
+cd docker-jenkins-build
+whoami
+touch dockerfile
+cat <<EOT>>dockerfile
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y vim
+RUN apt-get install -y nginx
+RUN rm /var/www/html/*
+WORKDIR /var/www/html/
+RUN echo "<H1> Hi from amit </H1>" > index.html
+EXPOSE 80
+CMD /usr/sbin/nginx -g "daemon off;"
+EOT
+sudo docker build -t devopstrainer/deployimage .
+sudo docker run -itd --name mycontainer -p 85:80 devopstrainer/deployimage
