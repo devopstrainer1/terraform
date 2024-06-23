@@ -1,0 +1,52 @@
+
+pipeline {
+    agent any
+
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the code from the repository
+                git branch: 'main', url: 'https://github.com/devopstrainer1/terraform.git'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'demo-credentials']]) {
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'demo-credentials']]) {
+                    sh 'terraform plan -out=tfplan'
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'demo-credentials']]) {
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            // Clean up workspace, archive artifacts, etc.
+            cleanWs()
+        }
+
+        success {
+            echo 'Pipeline completed successfully.'
+        }
+
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
+}
